@@ -96,3 +96,9 @@ python3 app.py
 1. Убедитесь, что ваш токен бота (`BOT_TOKEN`) и URL базы данных (`DB_URL`) корректны и доступны.
 2. Если база данных большая, процесс загрузки данных может занять некоторое время.
 3. При проблемах с Telegram API рекомендуется проверять доступность API и настройки бота.
+
+# Пример использования
+
+[@HRNyaMovieSearcherBot](https://t.me/HRNyaMovieSearcherBot)
+
+<img src="sample.PNG" alt="drawing" style="width:300px;"/>
