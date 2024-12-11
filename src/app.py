@@ -4,6 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import logging
 import os
+from googletrans import Translator
+
 
 def download_db():
     # URL вашей таблицы с gid листа
@@ -27,7 +29,19 @@ def download_db():
             logger.info("Используем существующий файл %s.", OUTPUT_FILE)
         else:
             logger.info("Файл данных отсутствует, и загрузка не удалась. Проверьте источник данных.")
-
+# Функция для перевода описаний. Попытка
+def translate_description(description):
+    try:
+        # Создаем объект Translator
+        translator = Translator()
+        # Переводим описание с английского на русский
+        translated = translator.translate(description, src='en', dest='ru')
+        print(translated)
+        # Возвращаем переведенный текст
+        return translated
+    except Exception as e:
+        logger.error("Ошибка при переводе описания: %s", e)
+        return description
 
 # Настройка логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -80,6 +94,13 @@ def find_similar_movies(movie_data, user_query_description, max_recommendations=
 @movie_bot.message_handler(content_types=['text'])
 def handle_user_query(message):
     user_description_query = message.text
+    if "/start" in user_description_query:
+        welcome_message = "Привет! 👋\n"
+        welcome_message += "\nЯ — бот, который помогает находить фильмы по ключевым словам 🎥"
+        welcome_message += "\nНапиши несколько слов, которые описывают то, что ты хочешь увидеть, и я подберу тебе подходящие фильмы! 🍿"
+        welcome_message += "\nПока что я умею работать только на английском. Надеюсь это не будет проблемой ❤️"
+        movie_bot.send_message(message.from_user.id, welcome_message)
+        return
     logger.info("Получен запрос от пользователя: %s", user_description_query)
     try:
         similar_movies = find_similar_movies(movie_dataset, user_description_query)
@@ -93,7 +114,7 @@ def handle_user_query(message):
         movie_years = similar_movies_dict['year']
         movie_descriptions = similar_movies_dict['description']
         response_movies = [
-            {"title": movie_titles[index], "year": movie_years[index], "description": movie_descriptions[index]} 
+            {"title": movie_titles[index], "year": movie_years[index], "description": translate_description(movie_descriptions[index])} 
             for index in movie_titles
         ]
         response_text = "\n\n".join(
